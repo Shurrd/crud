@@ -256,4 +256,12 @@ export class AuthService {
       message: 'Password has been reset successfully',
     };
   }
+
+  async validateJwtUser(id: number) {
+    const user = this.userRepository.findOneBy({ id });
+
+    if (!user) throw new NotFoundException('User Not Found');
+
+    return user;
+  }
 }

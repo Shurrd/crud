@@ -6,8 +6,8 @@ export type IsUniqueProps = {
   columnName: string;
 };
 
-export interface RequestWithId extends Request {
-  id: number;
+export interface RequestWithUser extends Request {
+  user: Users;
 }
 
 export interface TokenPayload {

@@ -8,7 +8,7 @@ import {
   SignupDto,
 } from './dtos';
 import { AuthService } from './auth.service';
-import { RequestWithId } from 'src/types';
+import { RequestWithUser } from 'src/types';
 import { AuthGuard } from 'src/common/guards';
 @Controller('auth')
 export class AuthController {
@@ -26,8 +26,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('logout')
-  async logOut(@Req() req: RequestWithId) {
-    return this.authService.logout(req.id);
+  async logOut(@Req() req: RequestWithUser) {
+    return this.authService.logout(req.user.id);
   }
 
   @Post('refresh')
@@ -39,9 +39,9 @@ export class AuthController {
   @Put('change-password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-    @Req() req: RequestWithId,
+    @Req() req: RequestWithUser,
   ) {
-    return this.authService.changePassword(req.id, changePasswordDto);
+    return this.authService.changePassword(req.user.id, changePasswordDto);
   }
 
   @Post('forgot-password')
