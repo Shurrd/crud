@@ -6,18 +6,19 @@ import { ConfigModule } from '@nestjs/config';
 import { UserService } from './users/user.service';
 import { UserController } from './users/user.controller';
 import { UserModule } from './users/user.module';
-import { RefreshToken, Users } from './entities';
+import { RefreshToken, ResetToken, Users } from './entities';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsUniqueConstraint } from './common/validators';
 import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { MailService } from './services';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([Users, RefreshToken]),
+    TypeOrmModule.forFeature([Users, RefreshToken, ResetToken]),
     TypeOrmModule.forRoot({
       type: process.env.DB_TYPE as any,
       host: process.env.DB_HOST,
@@ -27,7 +28,7 @@ import { JwtModule } from '@nestjs/jwt';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: true,
-      entities: [Users],
+      entities: [Users, RefreshToken, ResetToken],
     }),
     JwtModule.register({
       global: true,
@@ -41,6 +42,7 @@ import { JwtModule } from '@nestjs/jwt';
     AppService,
     UserService,
     AuthService,
+    MailService,
     IsUniqueConstraint,
     {
       provide: APP_INTERCEPTOR,
