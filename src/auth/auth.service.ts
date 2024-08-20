@@ -91,7 +91,13 @@ export class AuthService {
     return plainToInstance(AuthResponseDto, plainAuthResponse);
   }
 
-  logout() {}
+  async logout(userId: number): Promise<{ message: string }> {
+    await this.refreshTokenRepository.delete({ userId });
+
+    return {
+      message: 'Logged out successfully',
+    };
+  }
 
   async refreshTokens(refreshToken: string) {
     const token = await this.refreshTokenRepository.findOneBy({
