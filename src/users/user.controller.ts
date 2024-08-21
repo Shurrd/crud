@@ -29,15 +29,8 @@ export class UserController {
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Get()
-  async getAllUsers(@Req() req: RequestWithUser) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const users = await this.userService.getAllUsers();
-
-    return {
-      loggedInUser,
-      users,
-    };
+  async getAllUsers() {
+    return await this.userService.getAllUsers();
   }
 
   @ApiBearerAuth()
@@ -52,15 +45,8 @@ export class UserController {
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Get(':id')
-  async getUserById(@Param('id') id: number, @Req() req: RequestWithUser) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const user = await this.userService.getUserById(id);
-
-    return {
-      loggedInUser,
-      user,
-    };
+  async getUserById(@Param('id') id: number) {
+    return await this.userService.getUserById(id);
   }
 
   @ApiBearerAuth()
@@ -68,18 +54,8 @@ export class UserController {
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Get('email/:email')
-  async getUserByEmail(
-    @Param('email') email: string,
-    @Req() req: RequestWithUser,
-  ) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const user = await this.userService.getUserbyEmail(email);
-
-    return {
-      loggedInUser,
-      user,
-    };
+  async getUserByEmail(@Param('email') email: string) {
+    return await this.userService.getUserbyEmail(email);
   }
 
   @ApiBearerAuth()
@@ -87,18 +63,8 @@ export class UserController {
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Post()
-  async createUser(
-    @Body() createUserDto: CreateUserDto,
-    @Req() req: RequestWithUser,
-  ) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const newUser = await this.userService.createUser(createUserDto);
-
-    return {
-      loggedInUser,
-      newUser,
-    };
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return await this.userService.createUser(createUserDto);
   }
 
   @ApiBearerAuth()
@@ -109,16 +75,8 @@ export class UserController {
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: RequestWithUser,
   ) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const updatedUser = await this.userService.updateUser(id, updateUserDto);
-
-    return {
-      loggedInUser,
-      updatedUser,
-    };
+    return await this.userService.updateUser(id, updateUserDto);
   }
 
   @ApiBearerAuth()
@@ -126,14 +84,7 @@ export class UserController {
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async deleteUser(@Param('id') id: number, @Req() req: RequestWithUser) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-
-    const result = await this.userService.deleteUser(id);
-
-    return {
-      loggedInUser,
-      result,
-    };
+  async deleteUser(@Param('id') id: number) {
+    return await this.userService.deleteUser(id);
   }
 }

@@ -3,9 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Transactions } from './transaction.entity';
 
 @Entity()
 export class Users {
@@ -53,6 +55,9 @@ export class Users {
     nullable: false,
   })
   gender: string;
+
+  @OneToMany(() => Transactions, (transaction) => transaction.user)
+  transactions: Transactions[];
 
   @CreateDateColumn({
     name: 'created_at',
