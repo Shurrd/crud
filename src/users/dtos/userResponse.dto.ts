@@ -9,11 +9,6 @@ export class UserResponseDto {
   @Expose()
   lastName: string;
 
-  @Expose()
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
-  }
-
   @IsNotEmpty()
   @IsEmail()
   email: string;
