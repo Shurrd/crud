@@ -2,18 +2,28 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { MoreThanOrEqual, Repository } from 'typeorm';
-import { RefreshToken, Users } from 'src/entities';
-import { AuthResponseDto, SignupDto } from './dtos';
+import { RefreshToken, ResetToken, Users } from 'src/entities';
+import {
+  AuthResponseDto,
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  RefreshTokenDto,
+  ResetPasswordDto,
+  SignupDto,
+  TokensDto,
+} from './dtos';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { LoginDto } from './dtos/';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
+import { MailService } from 'src/services';
 
 const SALT_ROUNDS = 10;
 
@@ -26,8 +36,12 @@ export class AuthService {
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
 
+    @InjectRepository(ResetToken)
+    private readonly resetTokenRepository: Repository<ResetToken>,
+
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async signUp(signupDto: SignupDto): Promise<AuthResponseDto> {
@@ -91,11 +105,17 @@ export class AuthService {
     return plainToInstance(AuthResponseDto, plainAuthResponse);
   }
 
-  logout() {}
+  async logout(userId: number): Promise<{ message: string }> {
+    await this.refreshTokenRepository.delete({ userId });
 
-  async refreshTokens(refreshToken: string) {
+    return {
+      message: 'Logged out successfully',
+    };
+  }
+
+  async refreshTokens(refreshTokenDto: RefreshTokenDto) {
     const token = await this.refreshTokenRepository.findOneBy({
-      token: refreshToken,
+      token: refreshTokenDto.refreshToken,
       expirationDate: MoreThanOrEqual(new Date()),
     });
 
@@ -104,18 +124,18 @@ export class AuthService {
     const tokens = await this.generateUserTokens(token.userId);
 
     return {
-      tokens,
+      ...tokens,
       userId: token.userId,
     };
   }
 
-  async generateUserTokens(id: number) {
+  async generateUserTokens(id: number): Promise<TokensDto> {
     const accessToken = this.jwtService.sign(
       { id },
       { expiresIn: this.configService.get('JWT_EXPIRES_IN') },
     );
 
-    const refreshToken = uuidv4();
+    const refreshToken = nanoid(64);
 
     await this.storeRefreshToken(refreshToken, id);
 
@@ -147,5 +167,100 @@ export class AuthService {
 
       await this.refreshTokenRepository.save(newToken);
     }
+  }
+
+  async changePassword(
+    id: number,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.oldPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) throw new BadRequestException('Invalid Credentials');
+
+    const newHashPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      SALT_ROUNDS,
+    );
+
+    user.password = newHashPassword;
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Password changed successfully',
+    };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.userRepository.findOneBy({
+      email: forgotPasswordDto.email,
+    });
+
+    if (user) {
+      const resetToken = nanoid(64);
+
+      const expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 1);
+
+      const newToken = this.resetTokenRepository.create({
+        token: resetToken,
+        userId: user.id,
+        expirationDate,
+      });
+
+      this.mailService.sendPasswordResetEmail(
+        forgotPasswordDto.email,
+        resetToken,
+      );
+
+      await this.resetTokenRepository.save(newToken);
+    }
+
+    return {
+      message: 'Password reset link sent to your email',
+    };
+  }
+
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const token = await this.resetTokenRepository.findOneBy({
+      token: resetPasswordDto.resetToken,
+      expirationDate: MoreThanOrEqual(new Date()),
+    });
+
+    if (!token) throw new UnauthorizedException('Invalid Link');
+
+    const user = await this.userRepository.findOneBy({ id: token.userId });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    user.password = await bcrypt.hash(
+      resetPasswordDto.newPassword,
+      SALT_ROUNDS,
+    );
+
+    await this.userRepository.save(user);
+
+    await this.resetTokenRepository.delete({
+      token: resetPasswordDto.resetToken,
+    });
+    return {
+      message: 'Password has been reset successfully',
+    };
+  }
+
+  async validateJwtUser(id: number) {
+    const user = this.userRepository.findOneBy({ id });
+
+    if (!user) throw new NotFoundException('User Not Found');
+
+    return user;
   }
 }

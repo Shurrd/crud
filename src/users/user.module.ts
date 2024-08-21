@@ -1,16 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Users } from 'src/entities';
+import { RefreshToken, ResetToken, Transactions, Users } from 'src/entities';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthController } from 'src/auth/auth.controller';
+import { JwtService } from '@nestjs/jwt';
+import { MailService } from 'src/services';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Users]),
+    TypeOrmModule.forFeature([Users, RefreshToken, ResetToken, Transactions]),
     ConfigModule.forRoot({ isGlobal: true }),
   ],
-  controllers: [UserController],
-  providers: [UserService],
+  controllers: [UserController, AuthController],
+  providers: [UserService, AuthService, JwtService, ConfigService, MailService],
 })
 export class UserModule {}
