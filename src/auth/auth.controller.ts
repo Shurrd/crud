@@ -10,6 +10,9 @@ import {
 import { AuthService } from './auth.service';
 import { RequestWithUser } from 'src/types';
 import { AuthGuard } from 'src/common/guards';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

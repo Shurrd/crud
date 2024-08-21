@@ -16,12 +16,15 @@ import { AuthGuard, RoleGuard } from 'src/common/guards';
 import { RequestWithUser } from 'src/types';
 import { Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
@@ -37,13 +40,14 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('profile')
   async getProfile(@Req() req: RequestWithUser) {
-    const loggedInUser = await this.userService.getUserById(req.user.id);
-    return { loggedInUser };
+    return await this.userService.getUserById(req.user.id);
   }
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
@@ -59,6 +63,7 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
@@ -77,6 +82,7 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
@@ -95,6 +101,7 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
@@ -114,6 +121,7 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)

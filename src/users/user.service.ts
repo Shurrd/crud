@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/entities';
+import { RefreshToken, Users } from 'src/entities';
 import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dtos';
 import * as bcrypt from 'bcrypt';
@@ -17,6 +17,9 @@ export class UserService {
   constructor(
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
+
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async getAllUsers(): Promise<UserResponseDto[]> {
@@ -96,6 +99,11 @@ export class UserService {
   }
 
   async deleteUser(id: number) {
-    return await this.userRepository.delete(id);
+    await this.userRepository.delete(id);
+    await this.refreshTokenRepository.delete({ userId: id });
+
+    return {
+      message: `User with id: ${id} has been deleted`,
+    };
   }
 }

@@ -22,7 +22,6 @@ import { plainToInstance } from 'class-transformer';
 import { LoginDto } from './dtos/';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { MailService } from 'src/services';
 

@@ -1,21 +1,14 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { AuthGuard } from './common/guards';
-import { RequestWithUser } from 'src/types';
-import { UserService } from 'src/users/user.service'; // Adjust import path
+import { ApiTags } from '@nestjs/swagger';
 
-@UseGuards(AuthGuard)
 @Controller()
 export class AppController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(private readonly appService: AppService) {}
 
+  @ApiTags('Root')
   @Get()
-  async getHello(@Req() req: RequestWithUser) {
-    const user = await this.usersService.getUserById(req.user.id);
-
-    return {
-      message: 'Accessed Resource',
-      user,
-    };
+  async getHello() {
+    return this.appService.getHello();
   }
 }
