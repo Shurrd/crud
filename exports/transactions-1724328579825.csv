@@ -1,0 +1,6 @@
+ID,Transaction ID,Amount,Transaction Type,Transaction Date,User ID,User Email,User First Name,User Last Name
+1,BQr8qtR77vkos7fSZ7XP1NMlPAYZbItj,20037.00,deposit,Wed Aug 21 2024 21:15:40 GMT+0100 (West Africa Standard Time),6,test3@email.com,Abraham,Adeyemi
+2,6OQqd6GmmMKs0KehaRj8DKebUmoTjJdR,20000.00,withdrawal,Wed Aug 21 2024 21:17:26 GMT+0100 (West Africa Standard Time),10,test9@email.com,Arlette,Amuli
+3,dB5j9qhsgcHZQXrel2jAmuzVR8gJzRKa,100000000.00,transfer,Wed Aug 21 2024 21:20:57 GMT+0100 (West Africa Standard Time),7,test5@email.com,Oghenomaro,Sean
+4,yqJcnX5A8SthDWzplbJ5kqOs7dNbERql,15000.00,transfer,Wed Aug 21 2024 21:21:21 GMT+0100 (West Africa Standard Time),7,test5@email.com,Oghenomaro,Sean
+5,ZbrDgNc43HADH5xTt1NpV15yGse0Ae8S,230000.00,deposit,Thu Aug 22 2024 08:51:14 GMT+0100 (West Africa Standard Time),3,test2@email.com,London,Hisamaya

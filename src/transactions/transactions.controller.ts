@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos';
@@ -14,6 +15,7 @@ import { TransactionsService } from './transactions.service';
 import { AuthGuard, RoleGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
+import { Response } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('transactions')
@@ -36,7 +38,7 @@ export class TransactionsController {
 
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
-  @Get(':id')
+  @Get('transaction/:id')
   async getTransactionById(@Param('id') transactionId: string) {
     return await this.transactionsService.getTransactionById(transactionId);
   }
@@ -44,6 +46,11 @@ export class TransactionsController {
   @Get('account/details')
   async getTransactionsByLoggedInUser(@Req() req: RequestWithUser) {
     return await this.transactionsService.getTransactionsByUser(req.user.id);
+  }
+
+  @Get('export')
+  async exportAllTransactions(@Res() res: Response) {
+    await this.transactionsService.exportAllTransactions(res);
   }
 
   @Post()
