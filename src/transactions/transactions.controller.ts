@@ -5,17 +5,16 @@ import {
   Param,
   Post,
   Query,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos';
-import { RequestWithUser } from 'src/types';
 import { TransactionsService } from './transactions.service';
 import { AuthGuard, RoleGuard } from 'src/common/guards';
-import { Roles } from 'src/common/decorators';
+import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { Response } from 'express';
+import { Users } from 'src/entities';
 
 @UseGuards(AuthGuard)
 @Controller('transactions')
@@ -44,8 +43,8 @@ export class TransactionsController {
   }
 
   @Get('account/details')
-  async getTransactionsByLoggedInUser(@Req() req: RequestWithUser) {
-    return await this.transactionsService.getTransactionsByUser(req.user.id);
+  async getTransactionsByLoggedInUser(@CurrentUser() user: Users) {
+    return await this.transactionsService.getTransactionsByUser(user.id);
   }
 
   @Get('export')
@@ -63,20 +62,20 @@ export class TransactionsController {
 
   @Get('export/active-user')
   async exportTransactionsByLoggedInUser(
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: Users,
     @Res() res: Response,
   ) {
-    await this.transactionsService.exportTransactionsByUser(req.user.id, res);
+    await this.transactionsService.exportTransactionsByUser(user.id, res);
   }
 
   @Post()
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: Users,
   ) {
     return await this.transactionsService.createTransaction(
       createTransactionDto,
-      req.user.id,
+      user.id,
     );
   }
 }

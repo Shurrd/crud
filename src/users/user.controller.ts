@@ -7,14 +7,12 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dtos';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { AuthGuard, RoleGuard } from 'src/common/guards';
-import { RequestWithUser } from 'src/types';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -38,8 +36,8 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('active/profile')
-  async getProfile(@Req() req: RequestWithUser) {
-    return await this.userService.getUserById(req.user.id);
+  async getProfile(@CurrentUser() user: Users) {
+    return await this.userService.getUserById(user.id);
   }
 
   @ApiBearerAuth()
@@ -75,9 +73,9 @@ export class UserController {
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: Users,
   ) {
-    if (req.user.id === +id || req.user.role === 'admin') {
+    if (user.id === +id || user.role === 'admin') {
       return await this.userService.updateUser(id, updateUserDto);
     }
 
