@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -8,9 +8,10 @@ import {
   SignupDto,
 } from './dtos';
 import { AuthService } from './auth.service';
-import { RequestWithUser } from 'src/types';
 import { AuthGuard } from 'src/common/guards';
 import { ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/common/decorators';
+import { Users } from 'src/entities';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,8 +30,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('logout')
-  async logOut(@Req() req: RequestWithUser) {
-    return this.authService.logout(req.user.id);
+  async logOut(@CurrentUser() user: Users) {
+    return this.authService.logout(user.id);
   }
 
   @Post('refresh')
@@ -42,9 +43,9 @@ export class AuthController {
   @Put('change-password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: Users,
   ) {
-    return this.authService.changePassword(req.user.id, changePasswordDto);
+    return this.authService.changePassword(user.id, changePasswordDto);
   }
 
   @Post('forgot-password')
