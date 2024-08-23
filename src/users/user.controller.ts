@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -14,9 +15,10 @@ import { CreateUserDto } from './dtos';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { AuthGuard, RoleGuard } from 'src/common/guards';
 import { RequestWithUser } from 'src/types';
-import { Roles } from 'src/common/decorators';
+import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Users } from 'src/entities';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -35,7 +37,7 @@ export class UserController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  @Get('profile')
+  @Get('active/profile')
   async getProfile(@Req() req: RequestWithUser) {
     return await this.userService.getUserById(req.user.id);
   }
@@ -68,15 +70,18 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Roles(Role.ADMIN)
-  @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Patch(':id')
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
+    @Req() req: RequestWithUser,
   ) {
-    return await this.userService.updateUser(id, updateUserDto);
+    if (req.user.id === +id || req.user.role === 'admin') {
+      return await this.userService.updateUser(id, updateUserDto);
+    }
+
+    throw new ForbiddenException('You are not allowed to update this user');
   }
 
   @ApiBearerAuth()

@@ -163,4 +163,49 @@ export class TransactionsService {
 
     res.download(filePath, fileName);
   }
+
+  async exportTransactionsByUser(userId: number, res: Response) {
+    const transactions = await this.transactionRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+    const exportsDir = join(__dirname, '..', '..', 'exports');
+
+    await fs.mkdir(exportsDir, { recursive: true });
+
+    const fileName = `transactions-user-${userId}-${Date.now()}.csv`;
+    const filePath = join(exportsDir, fileName);
+
+    const csvWriter = createObjectCsvWriter({
+      path: filePath,
+      header: [
+        { id: 'id', title: 'ID' },
+        { id: 'transactionId', title: 'Transaction ID' },
+        { id: 'amount', title: 'Amount' },
+        { id: 'transactionType', title: 'Transaction Type' },
+        { id: 'transactionDate', title: 'Transaction Date' },
+        { id: 'userId', title: 'User ID' },
+        { id: 'userEmail', title: 'User Email' },
+        { id: 'userFirstName', title: 'User First Name' },
+        { id: 'userLastName', title: 'User Last Name' },
+      ],
+    });
+
+    const formattedTransactions = transactions.map((transaction) => ({
+      id: transaction.id,
+      transactionId: transaction.transactionId,
+      amount: transaction.amount,
+      transactionType: transaction.transactionType,
+      transactionDate: transaction.transactionDate,
+      userId: transaction.user.id,
+      userEmail: transaction.user.email,
+      userFirstName: transaction.user.firstName,
+      userLastName: transaction.user.lastName,
+    }));
+
+    await csvWriter.writeRecords(formattedTransactions);
+
+    res.download(filePath, fileName);
+  }
 }

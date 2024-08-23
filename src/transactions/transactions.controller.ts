@@ -53,6 +53,22 @@ export class TransactionsController {
     await this.transactionsService.exportAllTransactions(res);
   }
 
+  @Get('export/user/:id')
+  async exportTransactionsByUser(
+    @Param('id') userId: number,
+    @Res() res: Response,
+  ) {
+    await this.transactionsService.exportTransactionsByUser(userId, res);
+  }
+
+  @Get('export/active-user')
+  async exportTransactionsByLoggedInUser(
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+  ) {
+    await this.transactionsService.exportTransactionsByUser(req.user.id, res);
+  }
+
   @Post()
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
