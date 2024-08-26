@@ -44,7 +44,7 @@ export class UserController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
-  @Get(':id')
+  @Get('user/:id')
   async getUserById(@Param('id') id: number) {
     return await this.userService.getUserById(id);
   }
@@ -69,24 +69,23 @@ export class UserController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  @Patch(':id')
+  @Patch('user/:id')
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: Users,
   ) {
-    if (user.id === +id || user.role === 'admin') {
-      return await this.userService.updateUser(id, updateUserDto);
-    }
+    if (user.id !== +id || user.role !== 'admin')
+      throw new ForbiddenException('You are not allowed to update this user');
 
-    throw new ForbiddenException('You are not allowed to update this user');
+    return await this.userService.updateUser(id, updateUserDto);
   }
 
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
-  @Delete(':id')
+  @Delete('user/:id')
   async deleteUser(@Param('id') id: number) {
     return await this.userService.deleteUser(id);
   }

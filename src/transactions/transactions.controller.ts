@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -14,7 +15,7 @@ import { AuthGuard, RoleGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { Response } from 'express';
-import { Users } from 'src/entities';
+import { Transactions, Users } from 'src/entities';
 
 @UseGuards(AuthGuard)
 @Controller('transactions')
@@ -66,6 +67,33 @@ export class TransactionsController {
     @Res() res: Response,
   ) {
     await this.transactionsService.exportTransactionsByUser(user.id, res);
+  }
+
+  @Get('export/transaction/:transactionId')
+  async exportTransactionSummaryasPdf(
+    @Param('transactionId') transactionId: string,
+    @Res() res: Response,
+    @CurrentUser() user: Users,
+  ) {
+    const transaction =
+      await this.transactionsService.getTransactionById(transactionId);
+
+    if (user.id !== transaction.user.id || user.role !== 'admin') {
+      throw new ForbiddenException(
+        'You are not allowed to export this transaction',
+      );
+    } else {
+      const pdfBuffer =
+        await this.transactionsService.exportTransactionSummaryasPdf(
+          transactionId,
+        );
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="transaction-${transactionId}.pdf"`,
+        'Content-Length': pdfBuffer.length,
+      });
+      res.end(pdfBuffer);
+    }
   }
 
   @Post()
