@@ -8,7 +8,7 @@ import {
   SignupDto,
 } from './dtos';
 import { AuthService } from './auth.service';
-import { AuthGuard } from 'src/common/guards';
+import { JwtAuthGuard } from 'src/common/guards';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { Users } from 'src/entities';
@@ -28,7 +28,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logOut(@CurrentUser() user: Users) {
     return this.authService.logout(user.id);
@@ -39,7 +39,7 @@ export class AuthController {
     return this.authService.refreshTokens(refreshTokenDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put('change-password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,

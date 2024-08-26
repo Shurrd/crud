@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 import { AuthService } from 'src/auth/auth.service';
 import { RequestWithUser } from 'src/types';
 

@@ -12,14 +12,13 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dtos';
 import { UpdateUserDto } from './dtos/updateUser.dto';
-import { AuthGuard, RoleGuard } from 'src/common/guards';
+import { RoleGuard, JwtAuthGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Users } from 'src/entities';
 
 @ApiTags('Users')
-@UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -27,14 +26,14 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAllUsers() {
     return await this.userService.getAllUsers();
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('active/profile')
   async getProfile(@CurrentUser() user: Users) {
     return await this.userService.getUserById(user.id);
@@ -43,7 +42,7 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('user/:id')
   async getUserById(@Param('id') id: number) {
     return await this.userService.getUserById(id);
@@ -52,7 +51,7 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('email/:email')
   async getUserByEmail(@Param('email') email: string) {
     return await this.userService.getUserbyEmail(email);
@@ -61,30 +60,30 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto) {
     return await this.userService.createUser(createUserDto);
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch('user/:id')
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: Users,
   ) {
-    if (user.id !== +id || user.role !== 'admin')
-      throw new ForbiddenException('You are not allowed to update this user');
-
-    return await this.userService.updateUser(id, updateUserDto);
+    if (user.id === +id || user.role === 'admin') {
+      return await this.userService.updateUser(id, updateUserDto);
+    }
+    throw new ForbiddenException('You are not allowed to update this user');
   }
 
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete('user/:id')
   async deleteUser(@Param('id') id: number) {
     return await this.userService.deleteUser(id);
