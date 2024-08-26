@@ -8,6 +8,7 @@ import { createObjectCsvWriter } from 'csv-writer';
 import { Response } from 'express';
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import * as PDFDocument from 'pdfkit';
 
 @Injectable()
 export class TransactionsService {
@@ -207,5 +208,50 @@ export class TransactionsService {
     await csvWriter.writeRecords(formattedTransactions);
 
     res.download(filePath, fileName);
+  }
+
+  async exportTransactionSummaryasPdf(transactionId: string): Promise<Buffer> {
+    const transaction = await this.transactionRepository.findOne({
+      where: { transactionId },
+      relations: ['user'],
+    });
+
+    if (!transaction) throw new NotFoundException('Transaction not found');
+
+    const pdfBuffer: Buffer = await new Promise((resolve) => {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        bufferPages: true,
+      });
+
+      const chunks: Buffer[] = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+
+      doc.fontSize(20).text('Transaction Summary', { align: 'center' });
+
+      doc.moveDown();
+
+      doc.fontSize(14).text(`Transaction ID: ${transaction.transactionId}`);
+      doc.text(`Amount: $${transaction.amount}`);
+      doc.text(`Transaction Type: ${transaction.transactionType}`);
+      doc.text(
+        `Transaction Date: ${transaction.transactionDate.toDateString()}`,
+      );
+
+      doc.moveDown();
+
+      doc.text('User Details:', { underline: true });
+      doc.text(`User ID: ${transaction.user.id}`);
+      doc.text(`User Email: ${transaction.user.email}`);
+      doc.text(
+        `User Name: ${transaction.user.firstName} ${transaction.user.lastName}`,
+      );
+
+      doc.end();
+    });
+
+    return pdfBuffer;
   }
 }
