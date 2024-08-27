@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -8,10 +16,11 @@ import {
   SignupDto,
 } from './dtos';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from 'src/common/guards';
+import { GoogleOAuthGuard, JwtAuthGuard } from 'src/common/guards';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { Users } from 'src/entities';
+import { RequestWithUser } from 'src/types';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -56,5 +65,15 @@ export class AuthController {
   @Put('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth(@Req() req: RequestWithUser) {}
+
+  @Get('google/redirect')
+  @UseGuards(GoogleOAuthGuard)
+  googleAuthRedirect(@Req() req: RequestWithUser) {
+    return this.authService.generateUserTokens(req.user.id);
   }
 }

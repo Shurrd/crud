@@ -4,10 +4,9 @@ import { RefreshToken, ResetToken, Transactions, Users } from 'src/entities';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ConfigModule } from '@nestjs/config';
-import { UserService } from 'src/users/user.service';
 import { MailService } from 'src/services';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './strategies';
+import { GoogleStrategy, JwtStrategy } from './strategies';
 
 @Module({
   imports: [
@@ -16,6 +15,6 @@ import { JwtStrategy } from './strategies';
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, MailService, JwtStrategy],
+  providers: [AuthService, MailService, JwtStrategy, GoogleStrategy],
 })
 export class AuthModule {}
