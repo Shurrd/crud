@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Transactions } from './transaction.entity';
+import { RefreshToken } from './refreshToken.entity';
 
 @Entity()
 export class Users {
@@ -35,7 +37,7 @@ export class Users {
 
   @Column({
     name: 'password',
-    nullable: false,
+    nullable: true,
   })
   password: string;
 
@@ -52,9 +54,15 @@ export class Users {
     name: 'gender',
     type: 'enum',
     enum: Gender,
-    nullable: false,
+    nullable: true,
   })
   gender: string;
+
+  @Column({
+    name: 'google_id',
+    nullable: true,
+  })
+  googleId: string;
 
   @OneToMany(() => Transactions, (transaction) => transaction.user)
   transactions: Transactions[];

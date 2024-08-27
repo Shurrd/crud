@@ -11,13 +11,13 @@ import {
 } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos';
 import { TransactionsService } from './transactions.service';
-import { AuthGuard, RoleGuard } from 'src/common/guards';
+import { JwtAuthGuard, RoleGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import { Response } from 'express';
-import { Transactions, Users } from 'src/entities';
+import { Users } from 'src/entities';
 
-@UseGuards(AuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
@@ -78,11 +78,7 @@ export class TransactionsController {
     const transaction =
       await this.transactionsService.getTransactionById(transactionId);
 
-    if (user.id !== transaction.user.id || user.role !== 'admin') {
-      throw new ForbiddenException(
-        'You are not allowed to export this transaction',
-      );
-    } else {
+    if (user.id === transaction.user.id || user.role === 'admin') {
       const pdfBuffer =
         await this.transactionsService.exportTransactionSummaryasPdf(
           transactionId,
@@ -93,6 +89,10 @@ export class TransactionsController {
         'Content-Length': pdfBuffer.length,
       });
       res.end(pdfBuffer);
+    } else {
+      throw new ForbiddenException(
+        'You are not allowed to export this transaction',
+      );
     }
   }
 

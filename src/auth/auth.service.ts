@@ -24,6 +24,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { nanoid } from 'nanoid';
 import { MailService } from 'src/services';
+import { Profile } from 'passport-google-oauth20';
 
 const SALT_ROUNDS = 10;
 
@@ -260,6 +261,26 @@ export class AuthService {
     const user = this.userRepository.findOneBy({ id });
 
     if (!user) throw new NotFoundException('User Not Found');
+
+    return user;
+  }
+
+  async validateOAuthLogin(profile: Profile) {
+    const user = await this.userRepository.findOneBy({
+      email: profile.emails[0].value,
+      googleId: profile.id,
+    });
+
+    if (!user) {
+      const newUser = this.userRepository.create({
+        email: profile.emails[0].value,
+        firstName: profile.name.givenName,
+        lastName: profile.name.familyName,
+        password: null,
+        googleId: profile.id,
+      });
+      await this.userRepository.save(newUser);
+    }
 
     return user;
   }
