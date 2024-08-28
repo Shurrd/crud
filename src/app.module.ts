@@ -2,7 +2,7 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserService } from './users/user.service';
 import { UserController } from './users/user.controller';
 import { UserModule } from './users/user.module';
@@ -22,16 +22,22 @@ import { TransactionsController } from './transactions/transactions.controller';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forFeature([Users, RefreshToken, ResetToken, Transactions]),
-    TypeOrmModule.forRoot({
-      type: process.env.DB_TYPE as any,
-      host: process.env.DB_HOST,
-      port: +process.env.DB_PORT,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      autoLoadEntities: true,
-      synchronize: true,
-      entities: [Users, RefreshToken, ResetToken, Transactions],
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        synchronize: true,
+        autoLoadEntities: true,
+        entities: [__dirname + '/../**/*.entities{.ts,.js}'],
+        migrations: ['dist/migrations/*{.ts,.js}'],
+        seeds: ['dist/seeds/**/*{.ts,.js}'],
+      }),
+      inject: [ConfigService],
     }),
     JwtModule.register({
       global: true,
