@@ -1,15 +1,13 @@
-import { Gender, Role } from 'src/common/enums';
+import { Gender, Role } from '../common/enums';
 import {
   Column,
   CreateDateColumn,
   Entity,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Transactions } from './transaction.entity';
-import { RefreshToken } from './refreshToken.entity';
 
 @Entity()
 export class Users {
@@ -64,7 +62,9 @@ export class Users {
   })
   googleId: string;
 
-  @OneToMany(() => Transactions, (transaction) => transaction.user)
+  @OneToMany(() => Transactions, (transaction) => transaction.user, {
+    nullable: true,
+  })
   transactions: Transactions[];
 
   @CreateDateColumn({

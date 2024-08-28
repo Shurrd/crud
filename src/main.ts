@@ -14,7 +14,7 @@ async function bootstrap() {
     .setTitle('My Crud API')
     .setDescription('My API description')
     .setVersion('1.0')
-    .addServer('http://localhost:3000/', 'Local environment')
+    .addServer('http://localhost:3333/', 'Local environment')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',

@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dtos';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { faker } from '@faker-js/faker';
 
 const SALT_ROUNDS = 10;
 @Injectable()
