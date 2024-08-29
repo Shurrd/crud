@@ -33,7 +33,7 @@ import { TransactionsController } from './transactions/transactions.controller';
         database: configService.get('DB_NAME'),
         synchronize: true,
         autoLoadEntities: true,
-        entities: [__dirname + '/../**/*.entities{.ts,.js}'],
+        entities: ['dist/entities/*{.ts,.js}'],
         migrations: ['dist/migrations/*{.ts,.js}'],
         seeds: ['dist/seeds/**/*{.ts,.js}'],
       }),

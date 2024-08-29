@@ -18,7 +18,7 @@ import { Response } from 'express';
 import { Users } from 'src/entities';
 
 @UseGuards(JwtAuthGuard)
-@Controller('transactions')
+@Controller('v1/transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 

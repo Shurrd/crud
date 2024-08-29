@@ -1,6 +1,6 @@
 import { Faker } from '@faker-js/faker';
-import { TransactionType } from '../common/enums';
-import { Transactions } from '../entities/transaction.entity';
+import { TransactionType } from '../enums';
+import { Transactions } from '../../entities/transaction.entity';
 import { setSeederFactory } from 'typeorm-extension';
 
 export const TransactionFactory = setSeederFactory(
