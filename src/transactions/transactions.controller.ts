@@ -18,7 +18,7 @@ import { Response } from 'express';
 import { Users } from 'src/entities';
 
 @UseGuards(JwtAuthGuard)
-@Controller('transactions')
+@Controller('v1/transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
@@ -48,11 +48,15 @@ export class TransactionsController {
     return await this.transactionsService.getTransactionsByUser(user.id);
   }
 
+  @Roles(Role.ADMIN)
+  @UseGuards(RoleGuard)
   @Get('export')
   async exportAllTransactions(@Res() res: Response) {
     await this.transactionsService.exportAllTransactions(res);
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(RoleGuard)
   @Get('export/user/:id')
   async exportTransactionsByUser(
     @Param('id') userId: number,

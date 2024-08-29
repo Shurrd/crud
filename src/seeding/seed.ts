@@ -3,9 +3,10 @@ import { runSeeders, SeederOptions } from 'typeorm-extension';
 dotenv.config();
 
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { UserFactory } from './user.factory';
+import { UserFactory } from '../common/factories/user.factory';
 import { MainSeeder } from './main.seeder';
 import { Transactions, Users } from '../entities';
+import { TransactionFactory } from '../common/factories/transaction.factory';
 
 const options: DataSourceOptions & SeederOptions = {
   type: process.env.DB_TYPE as 'postgres',
@@ -16,7 +17,7 @@ const options: DataSourceOptions & SeederOptions = {
   database: process.env.DB_NAME,
   entities: [Users, Transactions],
   seeds: [MainSeeder],
-  factories: [UserFactory],
+  factories: [UserFactory, TransactionFactory],
 };
 
 const dataSource = new DataSource(options);

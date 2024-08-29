@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -58,17 +59,10 @@ export class AuthService {
 
       const tokens = await this.generateUserTokens(user.id);
 
-      const plainAuthResponse = {
+      return {
+        tokens,
         userId: user.id,
-        email: user.email,
-        role: user.role,
-        gender: user.gender,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        tokens: tokens,
       };
-
-      return plainToInstance(AuthResponseDto, plainAuthResponse);
     } catch (error) {
       if (error.code === '23505') {
         throw new BadRequestException('Email already exists');
@@ -83,6 +77,12 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
+    if (user.googleId) {
+      Logger.log('User has a google account');
+      // TODO: Implement google login redirect
+      return null;
+    }
+
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
       user.password,
@@ -93,28 +93,23 @@ export class AuthService {
 
     const tokens = await this.generateUserTokens(user.id);
 
-    const plainAuthResponse = {
+    return {
+      tokens,
       userId: user.id,
-      email: user.email,
-      role: user.role,
-      gender: user.gender,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      tokens: tokens,
     };
-
-    return plainToInstance(AuthResponseDto, plainAuthResponse);
   }
 
   async logout(userId: number): Promise<{ message: string }> {
     await this.refreshTokenRepository.delete({ userId });
 
     return {
-      message: 'Logged out successfully',
+      message: `Logged out successfully user with id: ${userId} successfully `,
     };
   }
 
-  async refreshTokens(refreshTokenDto: RefreshTokenDto) {
+  async refreshTokens(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<AuthResponseDto> {
     const token = await this.refreshTokenRepository.findOneBy({
       token: refreshTokenDto.refreshToken,
       expirationDate: MoreThanOrEqual(new Date()),
@@ -125,7 +120,7 @@ export class AuthService {
     const tokens = await this.generateUserTokens(token.userId);
 
     return {
-      ...tokens,
+      tokens,
       userId: token.userId,
     };
   }
@@ -198,7 +193,9 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({
       email: forgotPasswordDto.email,
     });

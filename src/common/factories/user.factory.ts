@@ -1,11 +1,9 @@
 import { Faker } from '@faker-js/faker';
-import { Role } from '../common/enums';
-import { Users } from '../entities/user.entity';
+import { Role } from '../enums';
+import { Users } from '../../entities/user.entity';
 import { setSeederFactory } from 'typeorm-extension';
 
 export const UserFactory = setSeederFactory(Users, (faker: Faker) => {
-  const roles = Object.values(Role);
-
   const user = new Users();
 
   user.firstName = faker.person.firstName();

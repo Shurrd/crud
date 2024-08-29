@@ -23,7 +23,7 @@ import { Users } from 'src/entities';
 import { RequestWithUser } from 'src/types';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -73,7 +73,11 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(GoogleOAuthGuard)
-  googleAuthRedirect(@Req() req: RequestWithUser) {
-    return this.authService.generateUserTokens(req.user.id);
+  async googleAuthRedirect(@Req() req: RequestWithUser) {
+    const tokens = await this.authService.generateUserTokens(req.user.id);
+    return {
+      tokens,
+      userId: req.user.id,
+    };
   }
 }
