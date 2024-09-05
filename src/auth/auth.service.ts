@@ -80,7 +80,8 @@ export class AuthService {
     if (user.googleId) {
       Logger.log('User has a google account');
       // TODO: Implement google login redirect
-      return null;
+
+      throw new UnauthorizedException('User has a google account');
     }
 
     const isPasswordValid = await bcrypt.compare(
